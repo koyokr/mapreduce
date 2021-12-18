@@ -14,20 +14,15 @@ public class ReactionMapper extends Mapper<Object, Text, Text, IntWritable> {
 
     @Override
     public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-        // String date = ((FileSplit) context.getInputSplit()).getPath()
-        //         .getParent()
-        //         .getParent()
-        //         .getName();
-        JSONArray reactions = new JSONObject(value.toString())
-                .getJSONArray("contents")
-                .getJSONObject(0)
-                .getJSONArray("reactions");
+        JSONObject json = new JSONObject(value.toString());
+        String date = json.getString("yyyymm");
+        JSONArray reactions = json.getJSONArray("contents").getJSONObject(0).getJSONArray("reactions");
 
         for (int i = 0; i < reactions.length(); i++) {
             JSONObject reaction = reactions.getJSONObject(i);
             String reactionType = reaction.getString("reactionType");
             int reactionCount = reaction.getInt("count");
-            outputKey.set(reactionType);
+            outputKey.set(date + "," + reactionType);
             outputValue.set(reactionCount);
             context.write(outputKey, outputValue);
         }
